@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vision Therapy Solitaire - Complete Edition</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #1a4d2a 0%, #0f3b1f 100%);
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .main-wrapper {
+            width: 100%;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        
+        /* Therapy Hub */
+        .therapy-hub {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 59, 31, 0.98);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .therapy-hub.hidden { display: none; }
+        .hub-content {
+            max-width: 1000px;
+            width: 90%;
+            background: rgba(30, 70, 40, 0.95);
+            border-radius: 48px;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .hub-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffdd99;
+            margin-bottom: 10px;
+        }
+        .therapy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .therapy-card {
+            background: #2e6b3e;
+            border-radius: 28px;
+            padding: 24px 16px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .therapy-card.selected {
+            border-color: #ffaa66;
+            background: #ffaa33;
+        }
+        .therapy-card.selected .therapy-name { color: #1e3a2f; }
+        .therapy-icon { font-size: 3rem; margin-bottom: 12px; }
+        .therapy-name { font-size: 1.2rem; font-weight: bold; color: white; }
+        .therapy-desc { font-size: 0.75rem; color: #ddd3b0; }
+        .enter-btn {
+            background: #ffaa66;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 14px 32px;
+            border-radius: 60px;
+            cursor: pointer;
+        }
+        
+        /* Game Panel */
+        .game-panel {
+            display: none;
+            background: #0f3b1f;
+            border-radius: 20px;
+            padding: 15px;
+        }
+        .game-panel.active { display: block; }
+        
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #2e6b3e;
+            border-radius: 50px;
+            margin-bottom: 15px;
+        }
+        .mode-indicator {
+            background: #ffaa66;
+            color: #1e3a2f;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        button {
+            background: #f5f0d7;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .eye-btn {
+            background: #ddd3b0;
+        }
+        .eye-btn.active { background: gold; }
+        .stats {
+            background: #1e3a2f;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 30px;
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+        .stats span {
+            background: black;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+        canvas {
+            background: #2e6b3e;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            height: auto;
+            max-width: 1100px;
+        }
+        
+        /* Color Controls */
+        .color-controls {
+            display: none;
+            background: #3e7e4e;
+            padding: 8px 15px;
+            margin-top: 10px;
+            border-radius: 50px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .color-controls.visible { display: flex; }
+        .color-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .color-btn {
+            background: #e8d0a8;
+            font-size: 11px;
+            padding: 4px 10px;
+        }
+        .color-btn.active { background: #ffaa66; }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #2a5a3a;
+            padding: 4px 12px;
+            border-radius: 30px;
+        }
+        input[type="range"] {
+            width: 100px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #f5f0d7;
+            border-radius: 5px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffaa66;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+        
+        .message {
+            background: #efe6c9;
+            text-align: center;
+            padding: 8px;
+            margin-top: 12px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        /* Progress Panel */
+        .progress-panel {
+            background: #2e6b3e;
+            border-radius: 16px;
+            padding: 10px 15px;
+            margin-top: 15px;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .progress-stats {
+            display: flex;
+            gap: 15px;
+            color: white;
+            background: #1e4620;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 12px;
+        }
+        .progress-stats span {
+            background: black;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-family: monospace;
+        }
+        .chart-container {
+            background: #1e3a2f;
+            border-radius: 12px;
+            padding: 8px;
+        }
+        canvas#progressChart {
+            background: #f5f0d7;
+            border-radius: 10px;
+            width: 100%;
+            height: 60px;
+        }
+        
+        .back-btn {
+            background: #5a8a6a;
+            color: white;
+        }
+        
+        @media (max-width: 700px) {
+            .top-bar { flex-direction: column; align-items: stretch; }
+            .stats { justify-content: center; }
+            button { font-size: 11px; padding: 4px 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="main-wrapper">
+    <!-- THERAPY HUB -->
+    <div id="therapyHub" class="therapy-hub">
+        <div class="hub-content">
+            <div class="hub-title">👁️ Vision Therapy Solitaire</div>
+            <div class="therapy-grid">
+                <div class="therapy-card" data-mode="regular">
+                    <div class="therapy-icon">🃏</div>
+                    <div class="therapy-name">Regular Solitaire</div>
+                    <div class="therapy-desc">Kings to empty spots • Auto-move • Track progress</div>
+                </div>
+                <div class="therapy-card" data-mode="eye">
+                    <div class="therapy-icon">👁️</div>
+                    <div class="therapy-name">Lazy Eye Therapy</div>
+                    <div class="therapy-desc">Select active eye • Colored border reminder</div>
+                </div>
+                <div class="therapy-card" data-mode="color">
+                    <div class="therapy-icon">🎨</div>
+                    <div class="therapy-name">Color Vision Therapy</div>
+                    <div class="therapy-desc">8 color filters • Adjustable intensity</div>
+                </div>
+                <div class="therapy-card" data-mode="full">
+                    <div class="therapy-icon">✨</div>
+                    <div class="therapy-name">Full Therapy Mode</div>
+                    <div class="therapy-desc">Eye + Color + High Contrast</div>
+                </div>
+            </div>
+            <button id="enterGameBtn" class="enter-btn">▶ START THERAPY SESSION</button>
+        </div>
+    </div>
+
+    <!-- GAME PANEL -->
+    <div id="gamePanel" class="game-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <button id="backToHubBtn" class="back-btn">← BACK TO MENU</button>
+            <span id="modeBadge" class="mode-indicator">Regular Solitaire</span>
+        </div>
+        
+        <div class="top-bar">
+            <div class="eye-buttons">
+                <button id="leftEyeBtn" class="eye-btn">👁️ LEFT EYE</button>
+                <button id="rightEyeBtn" class="eye-btn">👁️ RIGHT EYE</button>
+            </div>
+            <div class="stats">
+                <div>🎯 MOVES: <span id="moveCount">0</span></div>
+                <div>⏱️ TIME: <span id="timerSec">0</span>s</div>
+                <div>🏆 WINS: <span id="winCountDisplay">0</span></div>
+            </div>
+            <div>
+                <button id="contrastBtn" style="background:#c7e9d0;">✨ HIGH CONTRAST</button>
+                <button id="autoMoveBtn" style="background:#ffaa66;">⚡ AUTO-MOVE ON</button>
+                <button id="audioToggleBtn" style="background:#88aadd;">🔊 AUDIO ON</button>
+                <button id="newGameBtn" style="background:#c7e9d0;">🃏 NEW GAME</button>
+            </div>
+        </div>
+        
+        <!-- Color Controls -->
+        <div id="colorControls" class="color-controls">
+            <div class="color-buttons">
+                <button id="colorOffBtn" class="color-btn active">OFF</button>
+                <button id="colorRedBtn" class="color-btn">🔴 RED</button>
+                <button id="colorBlueBtn" class="color-btn">🔵 BLUE</button>
+                <button id="colorGreenBtn" class="color-btn">🟢 GREEN</button>
+                <button id="colorCyanBtn" class="color-btn">🔷 CYAN</button>
+                <button id="colorMagentaBtn" class="color-btn">🟣 MAGENTA</button>
+                <button id="colorRedBlueBtn" class="color-btn">🔴🔵 R/B</button>
+                <button id="colorRedGreenBtn" class="color-btn">🔴🟢 R/G</button>
+                <button id="colorCyanMagentaBtn" class="color-btn">🔷🟣 C/M</button>
+            </div>
+            <div class="slider-container">
+                <label>🎚️ INTENSITY:</label>
+                <input type="range" id="intensitySlider" min="0" max="200" value="100" step="5">
+                <span id="intensityValue" class="intensity-value">100%</span>
+            </div>
+        </div>
+        
+        <div class="canvas-wrapper">
+            <canvas id="solitaireCanvas" width="1000" height="650"></canvas>
+        </div>
+        
+        <div id="message" class="message">✅ AUTO-MOVE ON: Click any card - it finds the best spot! Kings can move to empty columns.</div>
+    </div>
+
+    <!-- Progress Panel -->
+    <div class="progress-panel">
+        <div class="progress-header">
+            <div class="progress-stats">
+                <div>🎮 TOTAL GAMES: <span id="totalGames">0</span></div>
+                <div>🏆 WINS: <span id="totalWins">0</span></div>
+                <div>📈 WIN RATE: <span id="winRate">0</span>%</div>
+            </div>
+            <button id="resetStatsBtn" style="background:#ffaa66;">🗑️ RESET STATS</button>
+        </div>
+        <div class="chart-container">
+            <canvas id="progressChart" width="800" height="60"></canvas>
+        </div>
+        <div style="color:#ddd3b0; font-size:11px; text-align:center; margin-top:5px;">📅 Last 7 days (gold = wins)</div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // ==================== CANVAS SETUP ====================
+    const canvas = document.getElementById('solitaireCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Fixed card dimensions
+    const CARD_W = 85;
+    const CARD_H = 120;
+    const PADDING = 15;
+    
+    // Positions
+    let STOCK_X = PADDING;
+    let STOCK_Y = PADDING;
+    let WASTE_X = STOCK_X + CARD_W + 20;
+    let WASTE_Y = PADDING;
+    let FOUNDATION_X = canvas.width - (4 * (CARD_W + 12)) - PADDING;
+    let FOUNDATION_Y = PADDING;
+    let TABLEAU_X = PADDING;
+    let TABLEAU_Y = PADDING + CARD_H + 40;
+    
+    // Game state
+    let stock = [];
+    let waste = [];
+    let foundations = [[], [], [], []];
+    let tableau = [[], [], [], [], [], [], []];
+    let moves = 0;
+    let gameTimer = 0;
+    let timerInterval = null;
+    let gameActive = true;
+    let gameWon = false;
+    let autoMove = true;
+    
+    // Selection state
+    let selectedPile = null;
+    let selectedPileIndex = -1;
+    let selectedCardIndex = -1;
+    
+    // Therapy settings
+    let currentMode = "regular";
+    let activeEye = "none";
+    let highContrast = false;
+    let audioEnabled = true;
+    let colorTherapy = "off";
+    let filterIntensity = 100;
+    
+    // Stats
+    let gameStats = { totalGames: 0, totalWins: 0, dailyHistory: [] };
+    
+    // DOM elements
+    const therapyHub = document.getElementById('therapyHub');
+    const gamePanel = document.getElementById('gamePanel');
+    const modeBadge = document.getElementById('modeBadge');
+    const colorControls = document.getElementById('colorControls');
+    const autoMoveBtn = document.getElementById('autoMoveBtn');
+    const messageDiv = document.getElementById('message');
+    const moveSpan = document.getElementById('moveCount');
+    const timerSpan = document.getElementById('timerSec');
+    const winCountDisplay = document.getElementById('winCountDisplay');
+    const totalGamesSpan = document.getElementById('totalGames');
+    const totalWinsSpan = document.getElementById('totalWins');
+    const winRateSpan = document.getElementById('winRate');
+    
+    // ==================== CARD MOVEMENT RULES (WORKING) ====================
+    
+    function canPlaceOnTableau(card, targetPile) {
+        // EMPTY PILE: ONLY KINGS (rank 13) can be placed
+        if (targetPile.length === 0) {
+            return card.rank === 13;
+        }
+        // Non-empty pile: opposite color and one rank lower
+        const topCard = targetPile[targetPile.length - 1];
+        const topIsRed = (topCard.suit === '♥' || topCard.suit === '♦');
+        const cardIsRed = (card.suit === '♥' || card.suit === '♦');
+        return (topIsRed !== cardIsRed) && (card.rank === topCard.rank - 1);
+    }
+    
+    function canPlaceOnFoundation(card, foundationIndex) {
+        const pile = foundations[foundationIndex];
+        if (pile.length === 0) return card.rank === 1;
+        const topCard = pile[pile.length - 1];
+        return (topCard.suit === card.suit) && (card.rank === topCard.rank + 1);
+    }
+    
+    function isValidSequence(cards) {
+        for (let i = 0; i < cards.length - 1; i++) {
+            const cur = cards[i];
+            const next = cards[i+1];
+            const curRed = (cur.suit === '♥' || cur.suit === '♦');
+            const nextRed = (next.suit === '♥' || next.suit === '♦');
+            if (!(curRed !== nextRed && next.rank === cur.rank - 1)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // ==================== AUTO-MOVE ====================
+    function findBestDestination(card) {
+        // First: Foundations
+        for (let i = 0; i < 4; i++) {
+            if (canPlaceOnFoundation(card, i)) {
+                return { type: 'foundation', index: i };
+            }
+        }
+        // Second: Tableau piles
+        for (let i = 0; i < 7; i++) {
+            if (canPlaceOnTableau(card, tableau[i])) {
+                return { type: 'tableau', index: i };
+            }
+        }
+        return null;
+    }
+    
+    // ==================== EXECUTE MOVES ====================
+    function moveWasteTo(dest) {
+        if (waste.length === 0) return false;
+        const card = waste[waste.length - 1];
+        
+        if (dest.type === 'foundation' && canPlaceOnFoundation(card, dest.index)) {
+            foundations[dest.index].push(waste.pop());
+            moves++;
+            updateUI();
+            playSound('move');
+            drawGame();
+            return true;
+        }
+        if (dest.type === 'tableau' && canPlaceOnTableau(card, tableau[dest.index])) {
+            tableau[dest.index].push(waste.pop());
+            moves++;
+            updateUI();
+            playSound('move');
+            drawGame();
+            return true;
+        }
+        return false;
+    }
+    
+    function moveTableauTo(sourcePile, sourceCardIndex, dest) {
+        const sourceCards = tableau[sourcePile];
+        if (sourceCardIndex >= sourceCards.length) return false;
+        
+        const movingStack = sourceCards.slice(sourceCardIndex);
+        if (movingStack.length === 0) return false;
+        const bottomCard = movingStack[0];
+        
+        if (dest.type === 'foundation') {
+            if (movingStack.length === 1 && canPlaceOnFoundation(bottomCard, dest.index)) {
+                foundations[dest.index].push(sourceCards.pop());
+                moves++;
+                updateUI();
+                playSound('move');
+                if (sourceCards.length > 0 && !sourceCards[sourceCards.length-1].faceUp) {
+                    sourceCards[sourceCards.length-1].faceUp = true;
+                }
+                drawGame();
+                return true;
+            }
+            return false;
+        }
+        
+        if (dest.type === 'tableau') {
+            if (canPlaceOnTableau(bottomCard, tableau[dest.index])) {
+                if (isValidSequence(movingStack)) {
+                    tableau[dest.index].push(...movingStack);
+                    tableau[sourcePile] = sourceCards.slice(0, sourceCardIndex);
+                    if (tableau[sourcePile].length > 0 && !tableau[sourcePile][tableau[sourcePile].length-1].faceUp) {
+                        tableau[sourcePile][tableau[sourcePile].length-1].faceUp = true;
+                    }
+                    moves++;
+                    updateUI();
+                    playSound('move');
+                    drawGame();
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+    
+    function drawFromStock() {
+        if (stock.length === 0) {
+            if (waste.length === 0) {
+                messageDiv.innerText = "No more moves! Click NEW GAME.";
+                return false;
+            }
+            while (waste.length) {
+                let card = waste.pop();
+                card.faceUp = false;
+                stock.push(card);
+            }
+            moves++;
+            updateUI();
+            playSound('move');
+            drawGame();
+            return true;
+        }
+        let drawn = stock.pop();
+        drawn.faceUp = true;
+        waste.push(drawn);
+        moves++;
+        updateUI();
+        playSound('move');
+        drawGame();
+        return true;
+    }
+    
+    // ==================== CLICK HANDLER ====================
+    function handleCanvasClick(e) {
+        if (!gameActive || gameWon) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let x = (e.clientX - rect.left) * scaleX;
+        let y = (e.clientY - rect.top) * scaleY;
+        
+        // Stock click
+        if (x >= STOCK_X && x <= STOCK_X + CARD_W && y >= STOCK_Y && y <= STOCK_Y + CARD_H) {
+            drawFromStock();
+            checkWin();
+            return;
+        }
+        
+        // Waste click
+        if (waste.length > 0 && x >= WASTE_X && x <= WASTE_X + CARD_W && y >= WASTE_Y && y <= WASTE_Y + CARD_H) {
+            if (autoMove) {
+                const card = waste[waste.length - 1];
+                const dest = findBestDestination(card);
+                if (dest) {
+                    moveWasteTo(dest);
+                    checkWin();
+                    return;
+                } else {
+                    messageDiv.innerText = "No valid spot for this card right now.";
+                }
+            } else {
+                if (selectedPile === 'waste') {
+                    selectedPile = null;
+                } else {
+                    selectedPile = 'waste';
+                    selectedPileIndex = -1;
+                    selectedCardIndex = -1;
+                }
+                drawGame();
+            }
+            return;
+        }
+        
+        // Foundation clicks
+        for (let i = 0; i < 4; i++) {
+            let fx = FOUNDATION_X + i * (CARD_W + 12);
+            if (x >= fx && x <= fx + CARD_W && y >= FOUNDATION_Y && y <= FOUNDATION_Y + CARD_H) {
+                if (selectedPile === 'waste') {
+                    moveWasteTo({ type: 'foundation', index: i });
+                    selectedPile = null;
+                    checkWin();
+                } else if (selectedPile === 'tableau' && selectedPileIndex >= 0 && selectedCardIndex >= 0) {
+                    moveTableauTo(selectedPileIndex, selectedCardIndex, { type: 'foundation', index: i });
+                    selectedPile = null;
+                    checkWin();
+                }
+                drawGame();
+                return;
+            }
+        }
+        
+        // Tableau clicks
+        for (let p = 0; p < 7; p++) {
+            let startX = TABLEAU_X + p * (CARD_W + 18);
+            let pile = tableau[p];
+            for (let i = pile.length - 1; i >= 0; i--) {
+                let yOff = TABLEAU_Y + i * 22;
+                if (x >= startX && x <= startX + CARD_W && y >= yOff && y <= yOff + CARD_H && pile[i].faceUp) {
+                    const clickedCard = pile[i];
+                    
+                    if (autoMove && selectedPile === null) {
+                        const dest = findBestDestination(clickedCard);
+                        if (dest) {
+                            moveTableauTo(p, i, dest);
+                            checkWin();
+                            drawGame();
+                            return;
+                        } else {
+                            messageDiv.innerText = "No valid spot for this card right now.";
+                            drawGame();
+                            return;
+                        }
+                    }
+                    
+                    if (selectedPile !== null) {
+                        if (selectedPile === 'waste') {
+                            if (moveWasteTo({ type: 'tableau', index: p })) {
+                                selectedPile = null;
+                                checkWin();
+                            }
+                        } else if (selectedPile === 'tableau' && selectedPileIndex >= 0 && selectedCardIndex >= 0) {
+                            if (moveTableauTo(selectedPileIndex, selectedCardIndex, { type: 'tableau', index: p })) {
+                                selectedPile = null;
+                                checkWin();
+                            }
+                        }
+                        selectedPile = null;
+                        selectedPileIndex = -1;
+                        selectedCardIndex = -1;
+                    } else {
+                        selectedPile = 'tableau';
+                        selectedPileIndex = p;
+                        selectedCardIndex = i;
+                    }
+                    drawGame();
+                    return;
+                }
+            }
+        }
+        
+        selectedPile = null;
+        selectedPileIndex = -1;
+        selectedCardIndex = -1;
+        drawGame();
+    }
+    
+    // ==================== DRAWING ====================
+    function drawCard(x, y, card, isSelected, isEmptySpot = false) {
+        ctx.save();
+        if (isSelected) {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = "gold";
+        }
+        
+        if (isEmptySpot) {
+            ctx.fillStyle = "#aabb99";
+            ctx.fillRect(x, y, CARD_W, CARD_H);
+            ctx.strokeStyle = "#446633";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, CARD_W, CARD_H);
+            ctx.fillStyle = "#446633";
+            ctx.font = `bold ${Math.floor(CARD_W * 0.22)}px "Segoe UI"`;
+            ctx.fillText("EMPTY", x + CARD_W/2 - 20, y + CARD_H/2 + 5);
+            ctx.fillStyle = "#ffaa66";
+            ctx.font = `bold ${Math.floor(CARD_W * 0.28)}px "Segoe UI"`;
+            ctx.fillText("← KING ONLY", x + CARD_W/2 - 38, y + CARD_H/2 + 30);
+        } else if (card && card.faceUp) {
+            ctx.fillStyle = "#FFF9F0";
+            ctx.fillRect(x, y, CARD_W, CARD_H);
+            ctx.strokeStyle = "#222";
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(x, y, CARD_W, CARD_H);
+            ctx.fillStyle = (card.suit === '♥' || card.suit === '♦') ? "#C33" : "#222";
+            ctx.font = `bold ${Math.floor(CARD_W * 0.32)}px "Segoe UI"`;
+            ctx.fillText(card.value, x + 8, y + 30);
+            ctx.font = `${Math.floor(CARD_W * 0.35)}px "Segoe UI"`;
+            ctx.fillText(card.suit, x + CARD_W - 22, y + CARD_H - 12);
+            ctx.font = `${Math.floor(CARD_W * 0.55)}px "Segoe UI"`;
+            ctx.fillText(card.suit, x + CARD_W/2 - 14, y + CARD_H/2 + 12);
+        } else if (card && !card.faceUp) {
+            ctx.fillStyle = "#2c5a2e";
+            ctx.fillRect(x, y, CARD_W, CARD_H);
+            ctx.fillStyle = "#e9d69f";
+            ctx.font = `bold ${Math.floor(CARD_W * 0.5)}px monospace`;
+            ctx.fillText("?", x + CARD_W/2 - 12, y + CARD_H/2 + 8);
+            ctx.strokeStyle = "#446633";
+            ctx.strokeRect(x, y, CARD_W, CARD_H);
+        } else {
+            ctx.fillStyle = "#c0b28a";
+            ctx.fillRect(x, y, CARD_W, CARD_H);
+            ctx.strokeStyle = "#446633";
+            ctx.strokeRect(x, y, CARD_W, CARD_H);
+        }
+        ctx.restore();
+    }
+    
+    function drawGame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawCard(STOCK_X, STOCK_Y, stock.length > 0 ? { faceUp: false } : null, false);
+        if (waste.length > 0) {
+            drawCard(WASTE_X, WASTE_Y, waste[waste.length-1], selectedPile === 'waste');
+        } else {
+            drawCard(WASTE_X, WASTE_Y, null, false);
+        }
+        
+        for (let i = 0; i < 4; i++) {
+            let fx = FOUNDATION_X + i * (CARD_W + 12);
+            if (foundations[i].length > 0) {
+                drawCard(fx, FOUNDATION_Y, foundations[i][foundations[i].length-1], false);
+            } else {
+                drawCard(fx, FOUNDATION_Y, null, false);
+            }
+        }
+        
+        for (let p = 0; p < 7; p++) {
+            let startX = TABLEAU_X + p * (CARD_W + 18);
+            for (let i = 0; i < tableau[p].length; i++) {
+                let yOff = TABLEAU_Y + i * 22;
+                let isSelected = (selectedPile === 'tableau' && selectedPileIndex === p && selectedCardIndex === i);
+                drawCard(startX, yOff, tableau[p][i], isSelected);
+            }
+            if (tableau[p].length === 0) {
+                drawCard(startX, TABLEAU_Y, null, false, true);
+            }
+        }
+    }
+    
+    // ==================== GAME INIT ====================
+    function createDeck() {
+        const suits = ['♥', '♦', '♣', '♠'];
+        const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        let cards = [];
+        for (let suit of suits) {
+            for (let i = 0; i < values.length; i++) {
+                cards.push({ suit, value: values[i], rank: i + 1, faceUp: false });
+            }
+        }
+        return cards;
+    }
+    
+    function shuffle(deck) {
+        for (let i = deck.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+        return deck;
+    }
+    
+    function initGame() {
+        let deck = shuffle(createDeck());
+        stock = [...deck];
+        waste = [];
+        foundations = [[], [], [], []];
+        tableau = [[], [], [], [], [], [], []];
+        
+        let idx = 0;
+        for (let pile = 0; pile < 7; pile++) {
+            for (let i = 0; i <= pile; i++) {
+                let card = stock[idx++];
+                card.faceUp = (i === pile);
+                tableau[pile].push(card);
+            }
+        }
+        stock = stock.slice(idx);
+        
+        moves = 0;
+        gameWon = false;
+        gameActive = true;
+        selectedPile = null;
+        selectedPileIndex = -1;
+        selectedCardIndex = -1;
+        
+        if (timerInterval) clearInterval(timerInterval);
+        gameTimer = 0;
+        timerInterval = setInterval(() => {
+            if (gameActive && !gameWon) {
+                gameTimer++;
+                timerSpan.innerText = gameTimer;
+            }
+        }, 1000);
+        
+        updateUI();
+        drawGame();
+    }
+    
+    function updateUI() {
+        moveSpan.innerText = moves;
+    }
+    
+    function checkWin() {
+        if (foundations.every(pile => pile.length === 13) && !gameWon) {
+            gameWon = true;
+            gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            messageDiv.innerText = "🎉 YOU WIN! 🎉 Great job!";
+            playSound('win');
+            recordGame(true);
+            drawGame();
+            return true;
+        }
+        return false;
+    }
+    
+    function playSound(type) {
+        if (!audioEnabled) return;
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            if (type === 'move') {
+                osc.frequency.value = 523.25;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'win') {
+                osc.frequency.value = 659.25;
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            }
+            setTimeout(() => audioCtx.close(), 500);
+        } catch(e) {}
+    }
+    
+    // ==================== STATS ====================
+    function loadStats() {
+        const saved = localStorage.getItem('visionSolitaireStats');
+        if (saved) {
+            try { gameStats = JSON.parse(saved); } catch(e) {}
+        }
+        if (!gameStats.dailyHistory) gameStats.dailyHistory = [];
+        updateStatsUI();
+        drawChart();
+    }
+    
+    function saveStats() {
+        localStorage.setItem('visionSolitaireStats', JSON.stringify(gameStats));
+        updateStatsUI();
+        drawChart();
+    }
+    
+    function updateStatsUI() {
+        totalGamesSpan.innerText = gameStats.totalGames;
+        totalWinsSpan.innerText = gameStats.totalWins;
+        let rate = gameStats.totalGames > 0 ? ((gameStats.totalWins / gameStats.totalGames)*100).toFixed(1) : 0;
+        winRateSpan.innerText = rate;
+        winCountDisplay.innerText = gameStats.totalWins;
+    }
+    
+    function recordGame(win) {
+        const today = new Date().toISOString().slice(0,10);
+        let entry = gameStats.dailyHistory.find(d => d.date === today);
+        if (!entry) {
+            entry = { date: today, gamesPlayed: 0, wins: 0 };
+            gameStats.dailyHistory.push(entry);
+            if (gameStats.dailyHistory.length > 30) gameStats.dailyHistory.shift();
+        }
+        entry.gamesPlayed++;
+        if (win) entry.wins++;
+        gameStats.totalGames++;
+        if (win) gameStats.totalWins++;
+        saveStats();
+    }
+    
+    function drawChart() {
+        const chartCanvas = document.getElementById('progressChart');
+        const chartCtx = chartCanvas.getContext('2d');
+        chartCanvas.width = chartCanvas.parentElement.clientWidth - 20;
+        chartCanvas.height = 60;
+        
+        const width = chartCanvas.width;
+        const height = chartCanvas.height;
+        chartCtx.clearRect(0, 0, width, height);
+        chartCtx.fillStyle = "#f5f0d7";
+        chartCtx.fillRect(0, 0, width, height);
+        
+        let last7 = [];
+        for (let i = 6; i >= 0; i--) {
+            let d = new Date();
+            d.setDate(d.getDate() - i);
+            let dateStr = d.toISOString().slice(0,10);
+            let found = gameStats.dailyHistory.find(entry => entry.date === dateStr);
+            last7.push(found || { date: dateStr, gamesPlayed: 0, wins: 0 });
+        }
+        
+        const barW = Math.max(15, (width - 40) / 7 - 4);
+        const maxGames = Math.max(1, ...last7.map(d => d.gamesPlayed), 3);
+        for (let i = 0; i < last7.length; i++) {
+            let x = 25 + i * (barW + 4);
+            let games = last7[i].gamesPlayed;
+            let wins = last7[i].wins;
+            let totalH = (games / maxGames) * (height - 15);
+            let winH = (wins / maxGames) * (height - 15);
+            chartCtx.fillStyle = "#6c9ebf";
+            chartCtx.fillRect(x, height - 8 - totalH, barW, totalH);
+            chartCtx.fillStyle = "#f4c542";
+            chartCtx.fillRect(x, height - 8 - winH, barW, winH);
+        }
+    }
+    
+    // ==================== THERAPY UI FUNCTIONS ====================
+    function applyModeSettings() {
+        document.body.classList.remove('eye-left-active', 'eye-right-active', 'high-contrast');
+        gamePanel.style.filter = '';
+        
+        const eyeBtns = document.querySelector('.eye-buttons');
+        if (currentMode === 'regular') {
+            eyeBtns.style.opacity = '0.5';
+            eyeBtns.style.pointerEvents = 'none';
+            activeEye = 'none';
+            document.getElementById('leftEyeBtn').classList.remove('active');
+            document.getElementById('rightEyeBtn').classList.remove('active');
+        } else {
+            eyeBtns.style.opacity = '1';
+            eyeBtns.style.pointerEvents = 'auto';
+        }
+        
+        if (currentMode === 'color' || currentMode === 'full') {
+            colorControls.classList.add('visible');
+        } else {
+            colorControls.classList.remove('visible');
+            colorTherapy = 'off';
+            gamePanel.style.filter = '';
+        }
+        
+        if (highContrast) document.body.classList.add('high-contrast');
+        
+        if ((currentMode === 'eye' || currentMode === 'full') && activeEye !== 'none') {
+            document.body.classList.add(activeEye === 'left' ? 'eye-left-active' : 'eye-right-active');
+        }
+        
+        if ((currentMode === 'color' || currentMode === 'full') && colorTherapy !== 'off') {
+            applyColorFilter();
+        }
+        
+        const names = { regular: '🃏 Regular Solitaire', eye: '👁️ Lazy Eye Therapy', color: '🎨 Color Vision Therapy', full: '✨ Full Therapy Mode' };
+        modeBadge.innerText = names[currentMode];
+    }
+    
+    function applyColorFilter() {
+        if (colorTherapy === 'off') {
+            gamePanel.style.filter = '';
+            return;
+        }
+        let intensity = filterIntensity / 100;
+        let filters = {
+            red: `sepia(${intensity*0.6}) saturate(${1+intensity})`,
+            blue: `hue-rotate(${180+intensity*40}deg) saturate(${1+intensity*0.5})`,
+            green: `hue-rotate(${60+intensity*30}deg) saturate(${1+intensity*0.5})`,
+            cyan: `hue-rotate(${140+intensity*30}deg) saturate(${1+intensity*0.6})`,
+            magenta: `hue-rotate(${260+intensity*30}deg) saturate(${1+intensity*0.6})`,
+            redBlue: `contrast(${1+intensity*0.3}) saturate(${1+intensity*0.8})`,
+            redGreen: `contrast(${1+intensity*0.3}) saturate(${1+intensity*0.8})`,
+            cyanMagenta: `hue-rotate(${180+intensity*50}deg) saturate(${1+intensity*0.8})`
+        };
+        gamePanel.style.filter = filters[colorTherapy] || '';
+    }
+    
+    function setActiveEye(eye) {
+        activeEye = eye;
+        document.getElementById('leftEyeBtn').classList.remove('active');
+        document.getElementById('rightEyeBtn').classList.remove('active');
+        if (eye === 'left') document.getElementById('leftEyeBtn').classList.add('active');
+        if (eye === 'right') document.getElementById('rightEyeBtn').classList.add('active');
+        document.body.classList.remove('eye-left-active', 'eye-right-active');
+        if ((currentMode === 'eye' || currentMode === 'full') && eye !== 'none') {
+            document.body.classList.add(eye === 'left' ? 'eye-left-active' : 'eye-right-active');
+        }
+    }
+    
+    function setColorTherapy(mode) {
+        colorTherapy = mode;
+        const btns = ['Off', 'Red', 'Blue', 'Green', 'Cyan', 'Magenta', 'RedBlue', 'RedGreen', 'CyanMagenta'];
+        btns.forEach(b => {
+            const btn = document.getElementById(`color${b}Btn`);
+            if (btn) btn.classList.remove('active');
+        });
+        if (mode !== 'off') {
+            const btnName = mode === 'redBlue' ? 'RedBlue' : mode === 'redGreen' ? 'RedGreen' : mode === 'cyanMagenta' ? 'CyanMagenta' : mode.charAt(0).toUpperCase() + mode.slice(1);
+            const activeBtn = document.getElementById(`color${btnName}Btn`);
+            if (activeBtn) activeBtn.classList.add('active');
+        } else {
+            document.getElementById('colorOffBtn').classList.add('active');
+        }
+        applyColorFilter();
+    }
+    
+    function toggleContrast() {
+        highContrast = !highContrast;
+        if (highContrast) document.body.classList.add('high-contrast');
+        else document.body.classList.remove('high-contrast');
+    }
+    
+    function toggleAutoMove() {
+        autoMove = !autoMove;
+        autoMoveBtn.innerText = autoMove ? "⚡ AUTO-MOVE ON" : "🖱️ MANUAL MODE";
+        autoMoveBtn.style.background = autoMove ? "#ffaa66" : "#c7e9d0";
+        messageDiv.innerText = autoMove ? "✅ AUTO-MOVE ON: Click any card - it finds the best spot! Kings can move to empty columns." : "Manual mode: Click a card, then click where to move it.";
+        selectedPile = null;
+        drawGame();
+    }
+    
+    function toggleAudio() {
+        audioEnabled = !audioEnabled;
+        document.getElementById('audioToggleBtn').innerText = audioEnabled ? "🔊 AUDIO ON" : "🔇 AUDIO OFF";
+    }
+    
+    function newGame() {
+        initGame();
+        recordGame(false);
+        drawGame();
+    }
+    
+    function resetStats() {
+        if (confirm("Reset all progress data?")) {
+            gameStats = { totalGames: 0, totalWins: 0, dailyHistory: [] };
+            saveStats();
+            drawChart();
+            messageDiv.innerText = "Statistics reset!";
+        }
+    }
+    
+    // ==================== EVENT LISTENERS ====================
+    let selectedMode = 'regular';
+    document.querySelectorAll('.therapy-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.therapy-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedMode = this.dataset.mode;
+        });
+    });
+    document.querySelector('.therapy-card').classList.add('selected');
+    
+    document.getElementById('enterGameBtn').onclick = () => {
+        currentMode = selectedMode;
+        therapyHub.classList.add('hidden');
+        gamePanel.classList.add('active');
+        applyModeSettings();
+        initGame();
+        recordGame(false);
+    };
+    
+    document.getElementById('backToHubBtn').onclick = () => {
+        therapyHub.classList.remove('hidden');
+        gamePanel.classList.remove('active');
+        if (timerInterval) clearInterval(timerInterval);
+    };
+    
+    document.getElementById('leftEyeBtn').onclick = () => setActiveEye('left');
+    document.getElementById('rightEyeBtn').onclick = () => setActiveEye('right');
+    document.getElementById('contrastBtn').onclick = toggleContrast;
+    document.getElementById('autoMoveBtn').onclick = toggleAutoMove;
+    document.getElementById('audioToggleBtn').onclick = toggleAudio;
+    document.getElementById('newGameBtn').onclick = newGame;
+    document.getElementById('resetStatsBtn').onclick = resetStats;
+    
+    document.getElementById('colorOffBtn').onclick = () => setColorTherapy('off');
+    document.getElementById('colorRedBtn').onclick = () => setColorTherapy('red');
+    document.getElementById('colorBlueBtn').onclick = () => setColorTherapy('blue');
+    document.getElementById('colorGreenBtn').onclick = () => setColorTherapy('green');
+    document.getElementById('colorCyanBtn').onclick = () => setColorTherapy('cyan');
+    document.getElementById('colorMagentaBtn').onclick = () => setColorTherapy('magenta');
+    document.getElementById('colorRedBlueBtn').onclick = () => setColorTherapy('redBlue');
+    document.getElementById('colorRedGreenBtn').onclick = () => setColorTherapy('redGreen');
+    document.getElementById('colorCyanMagentaBtn').onclick = () => setColorTherapy('cyanMagenta');
+    
+    document.getElementById('intensitySlider').oninput = (e) => {
+        filterIntensity = parseInt(e.target.value);
+        document.getElementById('intensityValue').innerText = filterIntensity + "%";
+        if (currentMode === 'color' || currentMode === 'full') applyColorFilter();
+    };
+    
+    canvas.addEventListener('click', handleCanvasClick);
+    window.addEventListener('resize', () => { drawGame(); drawChart(); });
+    
+    // Add CSS for eye borders
+    const style = document.createElement('style');
+    style.textContent = `
+        .eye-left-active .game-panel { box-shadow: 0 0 0 6px #ffaa44; border-radius: 20px; }
+        .eye-right-active .game-panel { box-shadow: 0 0 0 6px #44ffaa; border-radius: 20px; }
+        body.high-contrast .game-panel { filter: invert(1) hue-rotate(180deg); }
+    `;
+    document.head.appendChild(style);
+    
+    loadStats();
+    initGame();
+})();
+</script>
+</body>
+</html>
